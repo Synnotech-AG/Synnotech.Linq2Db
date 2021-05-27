@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+        <Authors>Synnotech AG</Authors>
+        <Company>Synnotech AG</Company>
+        <Copyright>Copyright © Synnotech AG 2021</Copyright>
+        <Version>2.0.0</Version>
+        <Description>Extensions for LinqToDB that make your data access code easier.</Description>
+        <LangVersion>9.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <IsPackable>true</IsPackable>
+        <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageIcon>synnotech-logo.png</PackageIcon>
+        <PackageProjectUrl>https://github.com/Synnotech-AG/Synnotech.Linq2Db</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Synnotech-AG/Synnotech.Linq2Db.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReleaseNotes>
+Synntech.Linq2Db 1.0.0
+--------------------------------
+
+- initial release
+- implements the abstractions of Synnotech.DatabaseAbstractions 2.0.0 for Linq2Db.
+- see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
+        </PackageReleaseNotes>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="linq2db" Version="3.3.0" />
+        <PackageReference Include="Light.GuardClauses" Version="9.0.0" />
+        <PackageReference Include="Synnotech.DatabaseAbstractions" Version="2.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../../synnotech-logo.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>
