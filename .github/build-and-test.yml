@@ -1,0 +1,27 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore ./Code/Synnotech.Linq2Db.sln
+    - name: Build
+      run: dotnet build ./Code/Synnotech.Linq2Db.sln -c Release --no-restore
+    - name: Test Core Library
+      run: dotnet test ./Code/tests/Synnotech.Linq2Db.Tests/Synnotech.Linq2Db.Tests.csproj --no-build --verbosity normal
+    - name: Test MS SQL Integration Library
+      run: dotnet test ./Code/tests/Synnotech.Linq2Db.MsSqlServer.Tests/Synnotech.Linq2Db.MsSqlServer.Tests.csproj --no-build --verbosity normal
