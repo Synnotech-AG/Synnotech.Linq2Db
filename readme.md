@@ -15,7 +15,7 @@ The Synnotech.Linq2Db packages are compiled against [.NET Standard 2.0 and 2.1](
 There are several packages available:
 
 - Synnotech.Linq2Db implements the abstractions of [Synnotech.DatabaseAbstractions 2.x](https://github.com/synnotech-AG/synnotech.DatabaseAbstractions) in a database-agnostic way.
-- Synnotech.Linq2Db.MsSqlServer provides additional features that target Microsoft SQL Server and offers better integration, especially with apps that use `IServiceCollection`.
+- [Synnotech.Linq2Db.MsSqlServer](https://github.com/Synnotech-AG/Synnotech.Linq2Db/tree/main/Code/src/Synnotech.Linq2Db.MsSqlServer) provides additional features that target Microsoft SQL Server and offers better integration, especially with apps that use `IServiceCollection`.
 
 We recommend to use a package that targets your specific database server - if there is none for your purpuse, please [create an issue](https://github.com/Synnotech-AG/Synnotech.Linq2Db/issues) so that we can add it to our code base. Alternatively, you can simply reference Synnotech.Linq2Db and compose it by yourself.
 
