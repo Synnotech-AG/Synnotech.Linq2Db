@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
-Synntech.Linq2Db 1.0.0
+Synntech.Linq2Db 3.0.0
 --------------------------------
 
 - initial release

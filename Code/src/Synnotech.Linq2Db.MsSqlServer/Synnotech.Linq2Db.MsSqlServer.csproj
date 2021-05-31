@@ -5,7 +5,7 @@
 Synntech.Linq2Db.MsSqlServer 3.0.0
 --------------------------------
 
-- implements the abstractions of Synnotech.DatabaseAbstractions 2.0.0 for Linq2Db.
+- MS-SQL-independent code is now located in Synnotech.Linq2Db.
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
       </PackageReleaseNotes>
   </PropertyGroup>
