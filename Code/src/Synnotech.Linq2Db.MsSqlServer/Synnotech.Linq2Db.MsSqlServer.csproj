@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+      <PackageReleaseNotes>
+Synntech.Linq2Db.MsSqlServer 3.0.0
+--------------------------------
+
+- implements the abstractions of Synnotech.DatabaseAbstractions 2.0.0 for Linq2Db.
+- see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
+      </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="..\Synnotech.Linq2Db\Synnotech.Linq2Db.csproj" />
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.3" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>
