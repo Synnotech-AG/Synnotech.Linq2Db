@@ -3,7 +3,7 @@
 *Extensions for Linq2Db that target Microsoft SQL Server*
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-3.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
+[![NuGet](https://img.shields.io/badge/NuGet-4.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
 
 # How to install
 
@@ -11,13 +11,13 @@ Synnotech.Linq2Db.MsSqlServer is compiled against [.NET Standard 2.0 and 2.1](ht
 
 Synnotech.Linq2Db.MsSqlServer is available as a [NuGet package](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/) and can be installed via:
 
-- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="3.0.0" />`
+- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="4.0.0" />`
 - **dotnet CLI**: `dotnet add package Synnotech.Linq2Db.MsSqlServer`
 - **Visual Studio Package Manager Console**: `Install-Package Synnotech.Linq2Db.MsSqlServer`
 
 # What does Synnotech.Linq2Db.MsSqlServer offer you?
 
-Synnotech.Linq2Db implements the session abstractions of [Synnotech.DatabaseAbstractions](https://github.com/Synnotech-AG/Synnotech.DatabaseAbstractions) for Linq2Db 3.3.0 or newer. This allows you to simplify the code in your data access layer. Furthermore, Synnotech.Linq2Db.MsSqlServer allows you to configure your DI container with one call when you want to use the Synnotech default settings, targeting Microsoft.Data.SqlClient.
+Synnotech.Linq2Db implements the session abstractions of [Synnotech.DatabaseAbstractions](https://github.com/Synnotech-AG/Synnotech.DatabaseAbstractions) for Linq2Db 3.3.0 or newer. This allows you to simplify the code in your data access layer. Furthermore, Synnotech.Linq2Db.MsSqlServer allows you to configure your DI container with one call when you want to use the Synnotech default settings.
 
 Please see the [general docs](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/readme.md) on how to write custom session.
 
@@ -61,6 +61,7 @@ Please note: the configuration is only loaded once during startup. If you change
 `AddLinq2DbForSqlServer` has several optional parameters that you can supply:
 
 - `createMappings`: a delegate that can be used to configure the Linq2DB mapping schema. You do not need to provide this delegate when you use attributes on your data access model classes. However, we highly encourage you to not use attributes but use a single method were you define the mapping configuration (this makes it easier to customize or replace the data access layer).
+- `sqlServerProvider`: the enum value that indicates whether you want to use `Microsoft.Data.SqlClient` or `System.Data.SqlClient` as the underlying data provider. We recommend to use the former one (unless you have issues with it, e.g. when you want to use [spatial types or SqlHierarchyId]()) as it will receive updates more frequently. `System.Data.SqlClient` is part of the .NET Base Class Library.
 - `configurationSectionName`: the section name that is used to retrieve the `Linq2DbSettings` from the `IConfiguration` instance already registered with the DI container. The default value is "database".
 - `dataConnectionLifetime`: the enumeration value indicating the service lifetime for `DataConnection`. The default value is `ServiceLifetime.Transient`.
 - `registerFactoryDelegateForDataConnection`: the value indicating whether a `Func<DataConnection>` should be registered with the DI Container. The default value is `true`. You can set this value to false if you use a proper DI container like [LigthInject](https://github.com/seesharper/LightInject) that supports [Function Factories](https://www.lightinject.net/#function-factories).
