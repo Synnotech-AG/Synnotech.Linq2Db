@@ -2,10 +2,10 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
-Synntech.Linq2Db 3.0.0
+Synntech.Linq2Db 4.0.0
 --------------------------------
 
-- initial release
+- added CreateSqlCommand extension method for data connection
 - implements the abstractions of Synnotech.DatabaseAbstractions 2.0.0 for Linq2Db.
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
         </PackageReleaseNotes>

@@ -2,10 +2,11 @@
 
   <PropertyGroup>
       <PackageReleaseNotes>
-Synntech.Linq2Db.MsSqlServer 3.0.0
+Synntech.Linq2Db.MsSqlServer 4.0.0
 --------------------------------
 
-- MS-SQL-independent code is now located in Synnotech.Linq2Db.
+- removed dependency on Microsoft.Data.SqlClient
+- added option to use System.Data.SqlClient as the underyling provider
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
       </PackageReleaseNotes>
   </PropertyGroup>
