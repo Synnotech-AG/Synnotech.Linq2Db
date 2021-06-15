@@ -30,17 +30,23 @@ namespace Synnotech.Linq2Db.MsSqlServer
         /// your model classes, but we strongly recommend that you use the Linq2Db <see cref="FluentMappingBuilder" /> to specify how model classes are mapped.
         /// </param>
         /// <param name="configurationSectionName">The name of the configuration section that is used to retrieve the <see cref="Linq2DbSettings"/>.</param>
+        /// <param name="sqlServerProvider">
+        /// The underlying provider that is used (optional). You can choose between System.Data.SqlClient (the legacy provider, also part of the .NET Base Class Library)
+        /// or Microsoft.Data.SqlClient (the newest version which will also receive new updates). We recommend that you use the latter unless you have known issues
+        /// about it.
+        /// </param>
         /// <param name="dataConnectionLifetime">
         /// The lifetime that is used for the data connection (optional). The default value is <see cref="ServiceLifetime.Transient" />. If you want to, you
         /// can exchange it with <see cref="ServiceLifetime.Scoped" />.
         /// </param>
         /// <param name="registerFactoryDelegateForDataConnection">
-        /// The value indicating whether a <see cref="Func{TResult}" /> should also be registered with the DI container (optional). The default value is true.
+        /// The value indicating whether a Func&lt;DataConnection> should also be registered with the DI container (optional). The default value is true.
         /// You can set this value to false if you use a proper DI container like LightInject that offers function factories. https://www.lightinject.net/#function-factories
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services" /> is null.</exception>
         public static IServiceCollection AddLinq2DbForSqlServer(this IServiceCollection services,
                                                                 Action<MappingSchema>? createMappings = null,
+                                                                SqlServerProvider sqlServerProvider = SqlServerProvider.MicrosoftDataSqlClient,
                                                                 string configurationSectionName = Linq2DbSettings.DefaultSectionName,
                                                                 ServiceLifetime dataConnectionLifetime = ServiceLifetime.Transient,
                                                                 bool registerFactoryDelegateForDataConnection = true)
@@ -48,7 +54,7 @@ namespace Synnotech.Linq2Db.MsSqlServer
             services.MustNotBeNull(nameof(services));
 
             services.AddSingleton(container => Linq2DbSettings.FromConfiguration(container.GetRequiredService<IConfiguration>(), configurationSectionName))
-                    .AddSingleton(container => CreateSqlServerDataProvider(container.GetRequiredService<Linq2DbSettings>().SqlServerVersion, createMappings))
+                    .AddSingleton(container => CreateSqlServerDataProvider(container.GetRequiredService<Linq2DbSettings>().SqlServerVersion, sqlServerProvider, createMappings))
                     .AddSingleton(container =>
                     {
                         var settings = container.GetRequiredService<Linq2DbSettings>();
@@ -67,13 +73,20 @@ namespace Synnotech.Linq2Db.MsSqlServer
         /// Creates an <see cref="IDataProvider" /> that uses Microsoft.Data.SqlClient internally.
         /// </summary>
         /// <param name="sqlServerVersion">The SQL Server version of the target database (optional). Defaults to <see cref="SqlServerVersion.v2017" />.</param>
+        /// <param name="sqlServerProvider">
+        /// The underlying provider that is used (optional). You can choose between System.Data.SqlClient (the legacy provider, also part of the .NET Base Class Library)
+        /// or Microsoft.Data.SqlClient (the newest version which will also receive new updates). We recommend that you use the latter unless you have known issues
+        /// about it.
+        /// </param>
         /// <param name="createMappings">
         /// The delegate that manipulates the mapping schema of the data provider (optional). Alternatively, you could use the Linq2Db attributes to configure
         /// your model classes, but we strongly recommend that you use the Linq2Db <see cref="FluentMappingBuilder" /> to specify how model classes are mapped.
         /// </param>
-        public static IDataProvider CreateSqlServerDataProvider(SqlServerVersion sqlServerVersion = SqlServerVersion.v2017, Action<MappingSchema>? createMappings = null)
+        public static IDataProvider CreateSqlServerDataProvider(SqlServerVersion sqlServerVersion = SqlServerVersion.v2017,
+                                                                SqlServerProvider sqlServerProvider = SqlServerProvider.MicrosoftDataSqlClient,
+                                                                Action<MappingSchema>? createMappings = null)
         {
-            var dataProvider = SqlServerTools.GetDataProvider(sqlServerVersion, SqlServerProvider.MicrosoftDataSqlClient);
+            var dataProvider = SqlServerTools.GetDataProvider(sqlServerVersion, sqlServerProvider);
             createMappings?.Invoke(dataProvider.MappingSchema);
             return dataProvider;
         }
