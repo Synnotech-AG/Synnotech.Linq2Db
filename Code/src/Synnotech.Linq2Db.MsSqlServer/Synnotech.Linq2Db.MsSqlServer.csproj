@@ -2,11 +2,10 @@
 
   <PropertyGroup>
       <PackageReleaseNotes>
-Synntech.Linq2Db.MsSqlServer 4.0.0
+Synntech.Linq2Db.MsSqlServer 4.1.0
 --------------------------------
 
-- removed dependency on Microsoft.Data.SqlClient
-- added option to use System.Data.SqlClient as the underyling provider
+- added support for linq2db 3.4.0
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
       </PackageReleaseNotes>
   </PropertyGroup>
