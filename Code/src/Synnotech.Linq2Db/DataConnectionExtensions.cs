@@ -28,8 +28,8 @@ namespace Synnotech.Linq2Db
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         /// <exception cref="DbException">Thrown when an error occurs during opening the connection or starting the transaction.</exception>
-        public static async Task<TAbstraction> CreateAndOpenSessionAsync<TAbstraction, TImplementation, TDataConnection>(this Func<TDataConnection> createDataConnection,
-                                                                                                                         CancellationToken cancellationToken = default)
+        public static async ValueTask<TAbstraction> CreateAndOpenSessionAsync<TAbstraction, TImplementation, TDataConnection>(this Func<TDataConnection> createDataConnection,
+                                                                                                                              CancellationToken cancellationToken = default)
             where TImplementation : AsyncSession<TDataConnection>, TAbstraction, new()
             where TDataConnection : DataConnection
         {
@@ -57,8 +57,8 @@ namespace Synnotech.Linq2Db
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         /// <exception cref="DbException">Thrown when an error occurs during opening the connection or starting the transaction.</exception>
-        public static Task<TAsyncSession> CreateAndOpenSessionAsync<TAsyncSession, TDataConnection>(this Func<TDataConnection> createDataConnection,
-                                                                                                    CancellationToken cancellationToken = default)
+        public static ValueTask<TAsyncSession> CreateAndOpenSessionAsync<TAsyncSession, TDataConnection>(this Func<TDataConnection> createDataConnection,
+                                                                                                         CancellationToken cancellationToken = default)
             where TAsyncSession : AsyncSession<TDataConnection>, new()
             where TDataConnection : DataConnection =>
             createDataConnection.CreateAndOpenSessionAsync<TAsyncSession, TAsyncSession, TDataConnection>(cancellationToken);
@@ -76,8 +76,8 @@ namespace Synnotech.Linq2Db
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         /// <exception cref="DbException">Thrown when an error occurs during opening the connection or starting the transaction.</exception>
-        public static Task<TAbstraction> CreateAndOpenSessionAsync<TAbstraction, TImplementation>(this Func<DataConnection> createDataConnection,
-                                                                                                  CancellationToken cancellationToken = default)
+        public static ValueTask<TAbstraction> CreateAndOpenSessionAsync<TAbstraction, TImplementation>(this Func<DataConnection> createDataConnection,
+                                                                                                       CancellationToken cancellationToken = default)
             where TImplementation : AsyncSession, TAbstraction, new() =>
             createDataConnection.CreateAndOpenSessionAsync<TAbstraction, TImplementation, DataConnection>(cancellationToken);
 
@@ -93,8 +93,8 @@ namespace Synnotech.Linq2Db
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         /// <exception cref="DbException">Thrown when an error occurs during opening the connection or starting the transaction.</exception>
-        public static Task<TAsyncSession> CreateAndOpenSessionAsync<TAsyncSession>(this Func<DataConnection> createDataConnection,
-                                                                                   CancellationToken cancellationToken = default)
+        public static ValueTask<TAsyncSession> CreateAndOpenSessionAsync<TAsyncSession>(this Func<DataConnection> createDataConnection,
+                                                                                        CancellationToken cancellationToken = default)
             where TAsyncSession : AsyncSession, new() =>
             createDataConnection.CreateAndOpenSessionAsync<TAsyncSession, TAsyncSession, DataConnection>(cancellationToken);
 
@@ -114,7 +114,7 @@ namespace Synnotech.Linq2Db
             var command = dataConnection.CreateCommand();
             if (dataConnection.Transaction != null)
                 command.Transaction = dataConnection.Transaction;
-            return (T) command;
+            return (T)command;
         }
     }
 }

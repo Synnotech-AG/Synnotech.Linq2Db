@@ -20,7 +20,7 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
 
         private ILogger? Logger { get; }
 
-        protected string ConnectionString
+        protected static string ConnectionString
         {
             get
             {

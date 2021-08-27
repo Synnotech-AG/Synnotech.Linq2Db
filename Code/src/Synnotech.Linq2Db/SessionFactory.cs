@@ -16,15 +16,14 @@ namespace Synnotech.Linq2Db
     /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O.</typeparam>
     /// <typeparam name="TDataConnection">Your custom data connection subtype that you use in your solution.</typeparam>
     public class SessionFactory<TAbstraction, TImplementation, TDataConnection> : ISessionFactory<TAbstraction>
-        where TAbstraction : IAsyncSession
         where TImplementation : AsyncSession<TDataConnection>, TAbstraction, new()
         where TDataConnection : DataConnection
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation,TDataConnection}"/>.
+        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation,TDataConnection}" />.
         /// </summary>
         /// <param name="createDataConnection">The delegate that initializes a new data connection.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         public SessionFactory(Func<TDataConnection> createDataConnection) =>
             CreateDataConnection = createDataConnection.MustNotBeNull(nameof(createDataConnection));
 
@@ -36,7 +35,7 @@ namespace Synnotech.Linq2Db
         /// </summary>
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="DbException">Thrown when an SQL error occurred when opening the session or starting the transaction.</exception>
-        public Task<TAbstraction> OpenSessionAsync(CancellationToken cancellationToken = default) =>
+        public ValueTask<TAbstraction> OpenSessionAsync(CancellationToken cancellationToken = default) =>
             CreateDataConnection.CreateAndOpenSessionAsync<TAbstraction, TImplementation, TDataConnection>(cancellationToken);
     }
 
@@ -51,10 +50,10 @@ namespace Synnotech.Linq2Db
         where TImplementation : AsyncSession, TAbstraction, new()
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation}"/>.
+        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation}" />.
         /// </summary>
         /// <param name="createDataConnection">The delegate that initializes a new data connection.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
         public SessionFactory(Func<DataConnection> createDataConnection) : base(createDataConnection) { }
     }
 }

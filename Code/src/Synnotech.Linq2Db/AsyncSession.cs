@@ -59,13 +59,13 @@ namespace Synnotech.Linq2Db
         /// Disposes the Linq2Db data connection. If <see cref="SaveChangesAsync" /> has not been called,
         /// then the internal transaction will be rolled back implicitly by Linq2Db.
         /// </summary>
-        public void Dispose() => DataConnection.Dispose();
+        public void Dispose() => _dataConnection?.Dispose();
 
         /// <summary>
         /// Disposes the Linq2Db data connection. If <see cref="SaveChangesAsync" /> has not been called,
         /// then the internal transaction will be rolled back implicitly by Linq2Db.
         /// </summary>
-        public ValueTask DisposeAsync() => DataConnection.DisposeAsync();
+        public ValueTask DisposeAsync() => _dataConnection?.DisposeAsync() ?? default;
 
         /// <summary>
         /// Commits the internal transaction.

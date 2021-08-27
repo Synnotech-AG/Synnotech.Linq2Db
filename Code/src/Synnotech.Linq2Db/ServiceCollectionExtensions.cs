@@ -86,6 +86,74 @@ namespace Synnotech.Linq2Db
             services.AddSessionFactoryFor<TAbstraction, TImplementation, DataConnection>(factoryLifetime);
 
         /// <summary>
+        /// Registers an <see cref="ISessionFactory{TSessionAbstraction}" /> for the specified session. You can inject this session factory
+        /// into client code to resolve your session asynchronously. When resolved, a new data connection is created and injected into
+        /// your custom read-only session. See <see cref="ReadOnlySessionFactory{TAbstraction,TImplementation,TDataConnection}" /> for details.
+        /// <code>
+        /// public class MySessionClient
+        /// {
+        ///     public MySessionClient(ISessionFactory&lt;IMySession> sessionFactory) =>
+        ///         SessionFactory = sessionFactory;
+        /// 
+        ///     // IMySession must derive from IAsyncReadOnlySession
+        ///     private ISessionFactory&lt;IMySession> SessionFactory { get; }
+        /// 
+        ///     public async Task SomeMethod()
+        ///     {
+        ///         await using var session = await SessionFactory.OpenSessionAsync();
+        ///         // do something useful with your session
+        ///     }
+        /// }
+        /// </code>
+        /// </summary>
+        /// <typeparam name="TAbstraction">The interface that your session implements. It must implement <see cref="IAsyncReadOnlySession" />.</typeparam>
+        /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O. It must derive from <see cref="AsyncReadOnlySession{TDataConnection}" />.</typeparam>
+        /// <typeparam name="TDataConnection">Your custom data connection subtype that you use in your solution.</typeparam>
+        /// <param name="services">The collection that holds all registrations for the DI container.</param>
+        /// <param name="factoryLifetime">The lifetime for the session factory. It's usually ok for them to be a singleton.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="services" /> is null.</exception>
+        public static IServiceCollection AddReadOnlySessionFactoryFor<TAbstraction, TImplementation, TDataConnection>(this IServiceCollection services, ServiceLifetime factoryLifetime = ServiceLifetime.Singleton)
+            where TAbstraction : IAsyncReadOnlySession
+            where TImplementation : AsyncReadOnlySession<TDataConnection>, TAbstraction, new()
+            where TDataConnection : DataConnection
+        {
+            services.MustNotBeNull(nameof(services))
+                    .Add(new ServiceDescriptor(typeof(ISessionFactory<TAbstraction>), typeof(ReadOnlySessionFactory<TAbstraction, TImplementation, TDataConnection>), factoryLifetime));
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an <see cref="ISessionFactory{TSessionAbstraction}" /> for the specified session. You can inject this session factory
+        /// into client code to resolve your session asynchronously. When resolved, a new data connection is created and injected into
+        /// your custom read-only session. See <see cref="ReadOnlySessionFactory{TAbstraction,TImplementation,TDataConnection}" /> for details.
+        /// <code>
+        /// public class MySessionClient
+        /// {
+        ///     public MySessionClient(ISessionFactory&lt;IMySession> sessionFactory) =>
+        ///         SessionFactory = sessionFactory;
+        /// 
+        ///     // IMySession must derive from IAsyncReadOnlySession
+        ///     private ISessionFactory&lt;IMySession> SessionFactory { get; }
+        /// 
+        ///     public async Task SomeMethod()
+        ///     {
+        ///         await using var session = await SessionFactory.OpenSessionAsync();
+        ///         // do something useful with your session
+        ///     }
+        /// }
+        /// </code>
+        /// </summary>
+        /// <typeparam name="TAbstraction">The interface that your session implements. It must implement <see cref="IAsyncReadOnlySession" />.</typeparam>
+        /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O. It must derive from <see cref="AsyncReadOnlySession{TDataConnection}" />.</typeparam>
+        /// <param name="services">The collection that holds all registrations for the DI container.</param>
+        /// <param name="factoryLifetime">The lifetime for the session factory. It's usually ok for them to be a singleton.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="services" /> is null.</exception>
+        public static IServiceCollection AddReadOnlySessionFactoryFor<TAbstraction, TImplementation>(this IServiceCollection services, ServiceLifetime factoryLifetime = ServiceLifetime.Singleton)
+            where TAbstraction : IAsyncReadOnlySession
+            where TImplementation : AsyncReadOnlySession, TAbstraction, new() =>
+            services.AddReadOnlySessionFactoryFor<TAbstraction, TImplementation, DataConnection>(factoryLifetime);
+
+        /// <summary>
         /// Uses an <see cref="ILogger" /> instance to log a Linq2Db data connection trace message.
         /// The different trace levels are mapped to the different log levels.
         /// </summary>

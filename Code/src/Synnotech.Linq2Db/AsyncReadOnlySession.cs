@@ -17,28 +17,40 @@ namespace Synnotech.Linq2Db
     public abstract class AsyncReadOnlySession<TDataConnection> : IAsyncReadOnlySession
         where TDataConnection : DataConnection
     {
+        private TDataConnection? _dataConnection;
+
         /// <summary>
-        /// Initializes a new instance of <see cref="AsyncReadOnlySession{TDataConnection}" />.
+        /// Initializes a new instance of <see cref="AsyncReadOnlySession{TDataConnection}" />. Use this constructor if
+        /// you want to use <see cref="ServiceCollectionExtensions.AddSessionFactoryFor{TAbstraction,TImplementation,TDataConnection}" />
+        /// method to register your session with the DI container.
+        /// </summary>
+        protected AsyncReadOnlySession() { }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="AsyncReadOnlySession{TDataConnection}" />. 
         /// </summary>
         /// <param name="dataConnection">The Linq2Db data connection used for database access.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnection" /> is null.</exception>
-        protected AsyncReadOnlySession(TDataConnection dataConnection) =>
-            DataConnection = dataConnection.MustNotBeNull(nameof(dataConnection));
+        protected AsyncReadOnlySession(TDataConnection dataConnection) => SetDataConnection(dataConnection);
 
         /// <summary>
         /// Gets the Linq2Db data connection.
         /// </summary>
-        protected TDataConnection DataConnection { get; }
+        protected TDataConnection DataConnection =>
+            _dataConnection ?? throw new InvalidOperationException("You must not retrieve the data connection before it is set. Check the constructors for more details.");
 
         /// <summary>
         /// Disposes the Linq2Db data connection.
         /// </summary>
-        public void Dispose() => DataConnection.Dispose();
+        public void Dispose() => _dataConnection?.Dispose();
 
         /// <summary>
         /// Disposes the Linq2Db data connection.
         /// </summary>
-        public ValueTask DisposeAsync() => DataConnection.DisposeAsync();
+        public ValueTask DisposeAsync() => _dataConnection?.DisposeAsync() ?? default;
+
+        internal void SetDataConnection(TDataConnection dataConnection) =>
+            _dataConnection = dataConnection.MustNotBeNull(nameof(dataConnection));
     }
 
     /// <summary>
@@ -51,7 +63,15 @@ namespace Synnotech.Linq2Db
     public abstract class AsyncReadOnlySession : AsyncReadOnlySession<DataConnection>
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="AsyncReadOnlySession" />.
+        /// Initializes a new instance of <see cref="AsyncReadOnlySession" />. Use this constructor if
+        /// you want to use <see cref="ServiceCollectionExtensions.AddSessionFactoryFor{TAbstraction,TImplementation}" />
+        /// method to register your session with the DI container.
+        /// </summary>
+        protected AsyncReadOnlySession() { }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="AsyncReadOnlySession" />. Use this constructor
+        /// if you want to pass in the <see cref="DataConnection" /> directly.
         /// </summary>
         /// <param name="dataConnection">The Linq2Db data connection used for database access.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnection" /> is null.</exception>

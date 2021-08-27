@@ -4,6 +4,7 @@ using FluentAssertions;
 using LinqToDB;
 using LinqToDB.Data;
 using Microsoft.Extensions.DependencyInjection;
+using Synnotech.DatabaseAbstractions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,6 +25,25 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
 
             var employees = await session.GetEmployeesAsync();
 
+            CheckLoadedEmployees(employees);
+        }
+
+        [Fact]
+        public async Task LoadDataWithSessionFactory()
+        {
+            SkipTestIfNecessary();
+
+            var sessionFactory = PrepareContainer().AddReadOnlySessionFactoryFor<IEmployeeSession, EmployeeSessionWithDefaultConstructor>()
+                                                   .BuildServiceProvider()
+                                                   .GetRequiredService<ISessionFactory<IEmployeeSession>>();
+            await using var session = await sessionFactory.OpenSessionAsync();
+            var employees = await session.GetEmployeesAsync();
+
+            CheckLoadedEmployees(employees);
+        }
+
+        private static void CheckLoadedEmployees(List<Employee>? employees)
+        {
             var expectedEmployees = new[]
             {
                 new Employee { Id = 1, Name = "John Doe", Age = 42 },
@@ -37,6 +57,16 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
         {
             public EmployeeSession(DataConnection dataConnection) : base(dataConnection) { }
 
+            public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
+        }
+
+        private interface IEmployeeSession : IAsyncReadOnlySession
+        {
+            Task<List<Employee>> GetEmployeesAsync();
+        }
+
+        private sealed class EmployeeSessionWithDefaultConstructor : AsyncReadOnlySession, IEmployeeSession
+        {
             public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
         }
     }
