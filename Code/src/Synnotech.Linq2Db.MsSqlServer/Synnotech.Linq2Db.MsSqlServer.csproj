@@ -2,10 +2,10 @@
 
   <PropertyGroup>
       <PackageReleaseNotes>
-Synntech.Linq2Db.MsSqlServer 4.1.0
+Synntech.Linq2Db.MsSqlServer 5.0.0
 --------------------------------
-
-- added support for linq2db 3.4.0
+- added support for linq2db 3.4.3 and (breaking change) Synnotech.DatabaseAbstractions 3.0.0
+- read-only sessions can now also be created via ISessionFactory&lt;T&gt;
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
       </PackageReleaseNotes>
   </PropertyGroup>
