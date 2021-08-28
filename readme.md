@@ -6,7 +6,7 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-4.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
+[![NuGet](https://img.shields.io/badge/NuGet-5.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
 
 # How to install
 
@@ -14,7 +14,7 @@ The Synnotech.Linq2Db packages are compiled against [.NET Standard 2.0 and 2.1](
 
 There are several packages available:
 
-- Synnotech.Linq2Db implements the abstractions of [Synnotech.DatabaseAbstractions 2.x](https://github.com/synnotech-AG/synnotech.DatabaseAbstractions) in a database-agnostic way.
+- Synnotech.Linq2Db implements the abstractions of [Synnotech.DatabaseAbstractions 3.x](https://github.com/synnotech-AG/synnotech.DatabaseAbstractions) in a database-agnostic way.
 - [Synnotech.Linq2Db.MsSqlServer](https://github.com/Synnotech-AG/Synnotech.Linq2Db/tree/main/Code/src/Synnotech.Linq2Db.MsSqlServer) provides additional features that target Microsoft SQL Server and offers better integration, especially with apps that use `IServiceCollection`.
 
 We recommend to use a package that targets your specific database server - if there is none for your purpuse, please [create an issue](https://github.com/Synnotech-AG/Synnotech.Linq2Db/issues) so that we can add it to our code base. Alternatively, you can simply reference Synnotech.Linq2Db and compose it by yourself.
@@ -30,19 +30,17 @@ The following code snippets show the example for an ASP.NET Core controller that
 Your I/O abstraction should simply derive from `IAsyncReadOnlySession` and offer the corresponding I/O call to load contacts:
 
 ```csharp
-public interface IGetContactsSession : IAsyncDisposable
+public interface IGetContactsSession : IAsyncReadOnlySession
 {
     Task<List<Contact>> GetContactsAsync(int skip, int take);
 }
 ```
 
-To implement this interface, you should derive from the `AsyncReadOnlySession` class of Synnotech.Linq2Db.MsSqlServer:
+To implement this interface, you should derive from the `AsyncReadOnlySession` class of Synnotech.Linq2Db:
 
 ```csharp
 public sealed class LinqToDbGetContactsSession : AsyncReadOnlySession, IGetContactsSession
 {
-    public LinqToDbGetContactsSession(DataConnection dataConnection) : base(dataConnection) { }
-
     public Task<List<Contact>> GetContactsAsync(int skip, int take) =>
         DataConnection.GetTable<Contacts>()
                       .OrderBy(contact => contact.LastName)
@@ -61,10 +59,10 @@ You can then consume your session via the abstraction in client code. Check out 
 [Route("api/contacts")]
 public sealed class GetContactsController : ControllerBase
 {
-    public GetContactsController(Func<IGetContactsSession> createSession) =>
-        CreateSession = createSession;
+    public GetContactsController(ISessionFactory<IGetContactsSession> sessionFactory) =>
+        SessionFactory = sessionFactory;
         
-    private Func<IGetContractsSession> CreateSession { get; }
+    private ISessionFactory<IGetContractsSession> SessionFactory { get; }
     
     [HttpGet]
     public async Task<ActionResult<List<ContactDto>>> GetContacts(int skip, int take)
@@ -72,23 +70,22 @@ public sealed class GetContactsController : ControllerBase
         if (this.CheckPagingParametersForErrors(skip, take, out var badResult))
             return badResult;
         
-        await using var session = CreateSession();
+        await using var session = await SessionFactory.OpenSessionAsync();
         var contacts = await session.GetContactsAsync(skip, take);
         return ContactDto.FromContacts(contacts);
     }
 }
 ```
 
-In this example, a `Func<IGetContactsSession>` is injected into the controller. This factory delegate is used to instantiate the session once the parameters are validated. We recommend that you do not register your session as "scoped", but rather as transient with your DI container (because it's the controllers responsibility to properly open and close the session). This allows you to test if the session is disposed correctly without setting up the whole ASP.NET Core ecosystem to instantiate the controller.
+In this example, a `ISessionFactory<IGetContactsSession>` is injected into the controller. This factory is used to instantiate the session once the parameters are validated. After that, the contacts are retrieved via `await session.GetContactsAsync(skip, take)`, transformed to DTOs and returned from the controller.
 
-For this to work, we suggest that you use a DI container like [LightInject](https://github.com/seesharper/LightInject) that automatically provides you with [function factories](https://www.lightinject.net/#function-factories) once you have registered a type. If you use a DI container that does not support this feature, you can simply register the function factory yourself (typically as a singleton).
+For this to work, you must register your session factory with the DI container:
 
 ```csharp
-services.AddTransient<IGetContactsSession, LinqToDbGetContactsSession>();
-// The next call is not necessary if your DI container can automatically resolve
-// Func<T> when T is already registered. LightInject is able to do this.
-services.AddSingleton<Func<IGetContactsSession>>(container => container.GetRequiredService<IGetContactsSession>);
+services.AddReadOnlySessionFactoryFor<IGetContactsSession, LinqToDbGetContactsSession>();
 ```
+
+> Please note: there is also a constructor in the `AsyncReadOnlySession` class that allows you to directly pass a `DataConnection`. You can use this if you do not want to use `ISessionFactory<T>` to instantiate your session, but rather another mechanism like function factories.
 
 ## Sessions that manipulate data
 
@@ -171,7 +168,6 @@ Please note the following things about the session factory:
 - `LinqToDbUpdateContactSession` does not have a constructor that takes a `DataConnection`. This is done because the data connection needs to be initialized asynchronously (open the connection asynchronously, start the transaction asynchronously) before being passed
 to the `AsyncSession`. However, constructors in C# / .NET cannot run asynchronously. This job is performed by the implementation of `ISessionFactory<T>`. You can opt out of this feature by using the constructor of `AsyncSession` that actually takes a data connection. This data connection must be open and reference a transaction before being passed.
 - The implementation for `ISessionFactory<T>` will always create a transient instance of the target session (i.e. your session must have a default constructor). If you don't want transient instances, you need to opt out of `ISessionFactory` (although we do not recommend this - we think it is the controller's responsibility to handle the session during an HTTP request).
-- You should only use `ISessionFactory<T>` in scenarios where you use `IAsyncSession`. If your session is read-only (i.e. no transaction required) or when you handle transactions yourself via `IAsyncTransactionalSession`, you will not be able to use the session factory (as asynchronous opening is not required).
 
 ### Handling Transactions Individually
 
