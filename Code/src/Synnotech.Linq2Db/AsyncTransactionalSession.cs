@@ -7,7 +7,7 @@ using Synnotech.DatabaseAbstractions;
 namespace Synnotech.Linq2Db
 {
     /// <summary>
-    /// Represents an asynchronous session to MS SQL Server via a Linq2Db data connection.
+    /// Represents an asynchronous session via a Linq2Db data connection.
     /// This session can be used to start and commit several transactions individually by
     /// calling <see cref="BeginTransactionAsync" />. Disposing this session will also
     /// dispose the underlying data connection.
@@ -40,7 +40,7 @@ namespace Synnotech.Linq2Db
     }
 
     /// <summary>
-    /// Represents an asynchronous session to MS SQL Server via a Linq2Db data connection.
+    /// Represents an asynchronous session via a Linq2Db data connection.
     /// This session can be used to start and commit several transactions individually by
     /// calling BeginTransactionAsync. Disposing this session will also dispose the underlying data connection.
     /// Beware: you must not derive from this class and introduce other references to disposable objects.

@@ -18,7 +18,7 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
 
         private static bool AreDatabaseTestsEnabled => TestSettings.Configuration.GetValue<bool>("database:areTestsEnabled");
 
-        private ILogger? Logger { get; }
+        private ILogger Logger { get; }
 
         protected static string ConnectionString
         {
@@ -44,13 +44,9 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
 
         protected static void SkipTestIfNecessary() => Skip.IfNot(AreDatabaseTestsEnabled);
 
-        protected IServiceCollection PrepareContainer()
-        {
-            var services = new ServiceCollection().AddLinq2DbForSqlServer(DatabaseMappings.CreateMappings)
-                                                  .AddSingleton(TestSettings.Configuration);
-            if (Logger != null)
-                services.AddLogging(builder => builder.AddSerilog(Logger));
-            return services;
-        }
+        protected IServiceCollection PrepareContainer() =>
+            new ServiceCollection().AddLinq2DbForSqlServer(DatabaseMappings.CreateMappings)
+                                   .AddSingleton(TestSettings.Configuration)
+                                   .AddLogging(builder => builder.AddSerilog(Logger));
     }
 }

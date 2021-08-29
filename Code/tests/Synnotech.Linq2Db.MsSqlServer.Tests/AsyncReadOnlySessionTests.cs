@@ -33,7 +33,7 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
         {
             SkipTestIfNecessary();
 
-            var sessionFactory = PrepareContainer().AddReadOnlySessionFactoryFor<IEmployeeSession, EmployeeSessionWithDefaultConstructor>()
+            var sessionFactory = PrepareContainer().AddSessionFactoryFor<IEmployeeSession, EmployeeSession>()
                                                    .BuildServiceProvider()
                                                    .GetRequiredService<ISessionFactory<IEmployeeSession>>();
             await using var session = await sessionFactory.OpenSessionAsync();
@@ -53,20 +53,15 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
             employees.Should().BeEquivalentTo(expectedEmployees, options => options.WithStrictOrdering());
         }
 
-        private sealed class EmployeeSession : AsyncReadOnlySession
-        {
-            public EmployeeSession(DataConnection dataConnection) : base(dataConnection) { }
-
-            public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
-        }
-
         private interface IEmployeeSession : IAsyncReadOnlySession
         {
             Task<List<Employee>> GetEmployeesAsync();
         }
 
-        private sealed class EmployeeSessionWithDefaultConstructor : AsyncReadOnlySession, IEmployeeSession
+        private sealed class EmployeeSession : AsyncReadOnlySession, IEmployeeSession
         {
+            public EmployeeSession(DataConnection dataConnection) : base(dataConnection) { }
+
             public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
         }
     }

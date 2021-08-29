@@ -3,31 +3,26 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Light.GuardClauses;
-using LinqToDB.Data;
 using Synnotech.DatabaseAbstractions;
 
 namespace Synnotech.Linq2Db
 {
     /// <summary>
-    /// Represents a factory that creates a data connection, opens a connection to
-    /// the target database asynchronously and then starts a transaction asynchronously.
+    /// Represents a factory that instantiates a session and optionally initializes it
+    /// in an asynchronous fashion when the session implements <see cref="IInitializeAsync" />.
     /// </summary>
-    /// <typeparam name="TAbstraction">The abstraction that your session implements.</typeparam>
-    /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O.</typeparam>
-    /// <typeparam name="TDataConnection">Your custom data connection subtype that you use in your solution.</typeparam>
-    public class SessionFactory<TAbstraction, TImplementation, TDataConnection> : ISessionFactory<TAbstraction>
-        where TImplementation : AsyncSession<TDataConnection>, TAbstraction, new()
-        where TDataConnection : DataConnection
+    /// <typeparam name="T">The abstraction that your session implements.</typeparam>
+    public sealed class SessionFactory<T> : ISessionFactory<T>
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation,TDataConnection}" />.
+        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction}" />.
         /// </summary>
-        /// <param name="createDataConnection">The delegate that initializes a new data connection.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
-        public SessionFactory(Func<TDataConnection> createDataConnection) =>
-            CreateDataConnection = createDataConnection.MustNotBeNull(nameof(createDataConnection));
+        /// <param name="getSession">The delegate that resolves the session instance.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="getSession" /> is null.</exception>
+        public SessionFactory(Func<T> getSession) =>
+            GetSession = getSession.MustNotBeNull(nameof(getSession));
 
-        private Func<TDataConnection> CreateDataConnection { get; }
+        private Func<T> GetSession { get; }
 
         /// <summary>
         /// Creates a new data connection, opens a connection to the target database asynchronously
@@ -35,25 +30,18 @@ namespace Synnotech.Linq2Db
         /// </summary>
         /// <param name="cancellationToken">The token to cancel this asynchronous operation (optional).</param>
         /// <exception cref="DbException">Thrown when an SQL error occurred when opening the session or starting the transaction.</exception>
-        public ValueTask<TAbstraction> OpenSessionAsync(CancellationToken cancellationToken = default) =>
-            CreateDataConnection.CreateAndOpenSessionAsync<TAbstraction, TImplementation, TDataConnection>(cancellationToken);
-    }
+        public ValueTask<T> OpenSessionAsync(CancellationToken cancellationToken = default)
+        {
+            var session = GetSession();
+            if (session is IInitializeAsync initializeAsync && !initializeAsync.IsInitialized)
+                return InitializeSessionAsync(initializeAsync);
+            return new (session);
+        }
 
-    /// <summary>
-    /// Represents a factory that creates a data connection, opens a connection to
-    /// the target database asynchronously and then starts a transaction asynchronously.
-    /// </summary>
-    /// <typeparam name="TAbstraction">The abstraction that your session implements.</typeparam>
-    /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O.</typeparam>
-    public class SessionFactory<TAbstraction, TImplementation> : SessionFactory<TAbstraction, TImplementation, DataConnection>
-        where TAbstraction : IAsyncSession
-        where TImplementation : AsyncSession, TAbstraction, new()
-    {
-        /// <summary>
-        /// Initializes a new instance of <see cref="SessionFactory{TAbstraction,TImplementation}" />.
-        /// </summary>
-        /// <param name="createDataConnection">The delegate that initializes a new data connection.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="createDataConnection" /> is null.</exception>
-        public SessionFactory(Func<DataConnection> createDataConnection) : base(createDataConnection) { }
+        private static async ValueTask<T> InitializeSessionAsync(IInitializeAsync session)
+        {
+            await session.InitializeAsync();
+            return (T)session;
+        }
     }
 }
