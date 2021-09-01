@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-      <PackageReleaseNotes>
+    <PropertyGroup>
+        <PackageReleaseNotes>
 Synntech.Linq2Db.MsSqlServer 5.0.0
 --------------------------------
-- added support for linq2db 3.4.3 and (breaking change) Synnotech.DatabaseAbstractions 3.0.0
-- read-only sessions can now also be created via ISessionFactory&lt;T&gt;
-- see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
-      </PackageReleaseNotes>
-  </PropertyGroup>
 
-  <ItemGroup>
-      <ProjectReference Include="..\Synnotech.Linq2Db\Synnotech.Linq2Db.csproj" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
-  </ItemGroup>
+- added support for linq2db 3.4.3 and (breaking change) Synnotech.DatabaseAbstractions 3.0.0
+- read-only sessions and transactional sessions can now be created via ISessionFactory&lt;T&gt;
+- see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
+        </PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Synnotech.Linq2Db\Synnotech.Linq2Db.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    </ItemGroup>
 
 </Project>
