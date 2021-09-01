@@ -7,11 +7,15 @@ using Synnotech.DatabaseAbstractions;
 namespace Synnotech.Linq2Db
 {
     /// <summary>
+    /// <para>
     /// Represents an asynchronous database session via a Linq2Db data connection. This session
-    /// is only used to read data (i.e. no data is inserted or updated), thus SaveChangesAsync
+    /// is only used to read data (i.e. no data is inserted, updated, or deleted), thus SaveChangesAsync
     /// is not available. No transaction is needed while this session is active.
+    /// </para>
+    /// <para>
     /// Beware: you must not derive from this class and introduce other references to disposable objects.
     /// Only the <see cref="DataConnection" /> will be disposed.
+    /// </para>
     /// </summary>
     /// <typeparam name="TDataConnection">Your database context type that derives from <see cref="DataConnection" />.</typeparam>
     public abstract class AsyncReadOnlySession<TDataConnection> : IAsyncReadOnlySession
@@ -51,7 +55,8 @@ namespace Synnotech.Linq2Db
     public abstract class AsyncReadOnlySession : AsyncReadOnlySession<DataConnection>
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="AsyncReadOnlySession" />.
+        /// Initializes a new instance of <see cref="AsyncReadOnlySession" />. Use this constructor
+        /// if you want to pass in the <see cref="DataConnection" /> directly.
         /// </summary>
         /// <param name="dataConnection">The Linq2Db data connection used for database access.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnection" /> is null.</exception>

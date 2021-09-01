@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using LinqToDB;
+using LinqToDB.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Synnotech.DatabaseAbstractions;
 using Xunit;
@@ -46,6 +47,8 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
 
         private sealed class EmployeeSession : AsyncSession, IEmployeeSession
         {
+            public EmployeeSession(DataConnection dataConnection) : base(dataConnection) { }
+
             public Task<Employee> GetEmployeeAsync(int id) =>
                 DataConnection.GetTable<Employee>().FirstAsync(e => e.Id == id);
 
