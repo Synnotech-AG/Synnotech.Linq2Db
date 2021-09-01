@@ -41,6 +41,8 @@ To implement this interface, you should derive from the `AsyncReadOnlySession` c
 ```csharp
 public sealed class LinqToDbGetContactsSession : AsyncReadOnlySession, IGetContactsSession
 {
+    public LinqToDbGetContactsSession(DataConnection dataConnection) : base(dataConnection) { }
+
     public Task<List<Contact>> GetContactsAsync(int skip, int take) =>
         DataConnection.GetTable<Contacts>()
                       .OrderBy(contact => contact.LastName)
@@ -50,7 +52,7 @@ public sealed class LinqToDbGetContactsSession : AsyncReadOnlySession, IGetConta
 }
 ```
 
-`AsyncReadOnlySession` implements `IAsyncReadOnlySession`, `IDisposable` and `IAsyncDisposable` for you and provides LinqToDb's `DataConnection` via a protected property. This reduces the code you need to write in your session for your specific use case.
+`AsyncReadOnlySession` implements `IAsyncReadOnlySession`, `IDisposable` and `IAsyncDisposable` for you and provides LinqToDb's `DataConnection` via a protected property (the one that is passed in via constructor injection). This reduces the code you need to write in your session for your specific use case.
 
 You can then consume your session via the abstraction in client code. Check out the following ASP.NET Core controller for example:
 
@@ -62,7 +64,7 @@ public sealed class GetContactsController : ControllerBase
     public GetContactsController(ISessionFactory<IGetContactsSession> sessionFactory) =>
         SessionFactory = sessionFactory;
         
-    private ISessionFactory<IGetContractsSession> SessionFactory { get; }
+    private ISessionFactory<IGetContactsSession> SessionFactory { get; }
     
     [HttpGet]
     public async Task<ActionResult<List<ContactDto>>> GetContacts(int skip, int take)
@@ -77,21 +79,21 @@ public sealed class GetContactsController : ControllerBase
 }
 ```
 
-In this example, a `ISessionFactory<IGetContactsSession>` is injected into the controller. This factory is used to instantiate the session once the parameters are validated. After that, the contacts are retrieved via `await session.GetContactsAsync(skip, take)`, transformed to DTOs and returned from the controller.
+In this example, an `ISessionFactory<IGetContactsSession>` is injected into the controller. This factory is used to instantiate the session once the parameters are validated. After that, the contacts are retrieved via `await session.GetContactsAsync(skip, take)`, transformed to DTOs and returned from the controller.
 
 For this to work, you must register your session factory with the DI container:
 
 ```csharp
-services.AddReadOnlySessionFactoryFor<IGetContactsSession, LinqToDbGetContactsSession>();
+// This call will perform the following registrations (with the default sttings):
+// services.AddTransient<IGetContactsSession, LinqToDbGetContactsSession>()>();
+// services.AddSingleton<ISessionFactory<IGetContactsSession>, SessionFactory<IGetContactsSession>>();
+// services.AddSingleton<Func<IGetContactsSession>>(c => c.GetRequiredService<IGetContactsSession>);
+services.AddSessionFactoryFor<IGetContactsSession, LinqToDbGetContactsSession>();
 ```
 
-> Please note: there is also a constructor in the `AsyncReadOnlySession` class that allows you to directly pass a `DataConnection`. You can use this if you do not want to use `ISessionFactory<T>` to instantiate your session, but rather another mechanism like function factories.
+## Sessions that use a single transaction
 
-## Sessions that manipulate data
-
-If your session requires the `SaveChangesAsync` method, or you want to handle individual transactions, you can derive from the `IAsyncSession` interface or `IAsyncTransactionalSession` interface, respectively. We recommend that you open sessions that derive from `IAsyncSession` via an `ISessionFactory<T>`. All of these APIs support aborting async operations via cancellation tokens.
-
-### Example for updating an existing record with IAsyncSession
+If you want to insert, update or delete data, then you usually want to use a single transaction for your database commands. You can use the `IAsyncSession` interface for these scenarios and implement your custom session by deriving from `AsyncSession`.
 
 The abstraction might look like this:
 
@@ -104,11 +106,13 @@ public interface IUpdateContactSession : IAsyncSession
 }
 ```
 
-The class that implements this interface should derive from `AsyncSession`, which provides the same members as `AsyncReadOnlySession` plus a `SaveChangesAsync` method that commits the internal transaction:
+The class that implements this interface should derive from `AsyncSession` which provides the same members as `AsyncReadOnlySession` plus a `SaveChangesAsync` method that commits the internal transaction:
 
 ```csharp
 public sealed class LinqToDbUpdateContactSession : AsyncSession, IUpdateContactSession
 {
+    public LinqToDbUpdateContactSession(DataConnection dataConnection) : base(dataConnection) { }
+
     public Task<Contact?> GetContactAsync(int id) =>
 #nullable disable
         DataConnection.GetTable<Contact>()
@@ -119,7 +123,7 @@ public sealed class LinqToDbUpdateContactSession : AsyncSession, IUpdateContactS
 }
 ```
 
-You should register a factory for your session with your DI container:
+You should register a factory for your session with your DI container, the same way as we did it for the read-only session:
 
 ```csharp
 services.AddSessionFactoryFor<IUpdateContactSession, LinqToDbUpdateContactSession>();
@@ -163,13 +167,9 @@ public sealed class UpdateContactController : ControllerBase
 }
 ```
 
-Please note the following things about the session factory:
+Please note: the session factory will resolve a session instance (from the DI container), asynchronously open a connection to the target database and then start a transaction asynchronously. The session factory also supports scenarios when the session is registered with a scoped lifetime (the session is then only initialized once). However, we recommend that you use a transient lifetime as we argue that it is the controller's responsibility to begin and end the database session.
 
-- `LinqToDbUpdateContactSession` does not have a constructor that takes a `DataConnection`. This is done because the data connection needs to be initialized asynchronously (open the connection asynchronously, start the transaction asynchronously) before being passed
-to the `AsyncSession`. However, constructors in C# / .NET cannot run asynchronously. This job is performed by the implementation of `ISessionFactory<T>`. You can opt out of this feature by using the constructor of `AsyncSession` that actually takes a data connection. This data connection must be open and reference a transaction before being passed.
-- The implementation for `ISessionFactory<T>` will always create a transient instance of the target session (i.e. your session must have a default constructor). If you don't want transient instances, you need to opt out of `ISessionFactory` (although we do not recommend this - we think it is the controller's responsibility to handle the session during an HTTP request).
-
-### Handling Transactions Individually
+## Sessions with several transactions
 
 If you need to handle transactions individually, (e.g. because you want to handle a large amount of data in batches and have a transaction per batch), you can derive from the `IAsyncTransactionalSession` interface:
 
@@ -211,18 +211,18 @@ Your job that updates all products might look like this:
 ```csharp
 public sealed class UpdateAllProductsJob
 {
-    public UpdateAllProductsJob(Func<IUpdateProductsSession> createSession, ILogger logger)
+    public UpdateAllProductsJob(ISessionFactory<IUpdateProductsSession> sessionFactory, ILogger logger)
     {
-        CreateSession = createSession;
+        SessionFactory = sessionFactory;
         Logger = logger;
     }
     
-    private Func<IUpdateProductsSession> CreateSession { get; }
+    private ISessionFactory<IUpdateProductsSession> SessionFactory { get; }
     private ILogger Logger { get; }
 
     public async Task UpdateProductsAsync()
     {
-        await using var session = CreateSession();
+        await using var session = await SessionFactory.OpenSessionAsync();
         var numberOfProducts = await session.GetProductsCountAsync();
         const int batchSize = 100;
         var skip = 0;
@@ -257,9 +257,44 @@ public sealed class UpdateAllProductsJob
 }
 ```
 
-In the example above, the job gets a delegate `Func<IUpdateProductsSession>` injected that can be used to create a session. In `UpdateProductsAsync`, the session is created and the number of products is determined. The products are then updated in batches with size 100. In each batch, a new transaction is started and committed at the end. The transaction is disposed in the finally block before a new batch begins.
+In the example above, the job get an `ISessionFactory<IUpdateProductsSession>` that can be used to create a session. In `UpdateProductsAsync`, the session is created and the number of products is determined. The products are then updated in batches with size 100. In each batch, a new transaction is started and committed at the end. The transaction is disposed in the finally block before a new batch begins.
 
-*Please keep in mind*: neither LinqToDB nor Synnotech.DatabaseAbstractions support nested transactions. You should always start a single transaction, commit and dispose it, and only afterwards create a new transaction. If you create a new transaction before committing it, your current transaction will be disposed (and implicitly rolled back).
+For this to work, you must register the session factory with the DI container:
+
+```csharp
+services.AddSessionFactoryFor<IUpdateProductsSession, LinqToDbUpdateProductsSession>();
+```
+
+*Please keep in mind*: neither LinqToDB nor Synnotech.DatabaseAbstractions support nested transactions. You should always start a single transaction, commit and/or dispose it, and only afterwards create a new transaction. If you create a new transaction before committing it, your current transaction will be disposed (and implicitly rolled back, this is how LinqToDB 3.4.3 is implemented internally).
+
+# Customizing Synnotech.Linq2Db
+
+## Deriving from DataConnection
+
+Some projects like to derive from LinqToDB's `DataConnection`, e.g. to provide properties for each entity. This pattern is similar to Entity Frameowork's `DbContext`.
+
+```csharp
+public sealed class MyContext : DataConnection
+{
+    public MyContext(LinqToDbConnectionOptions options) : base(options) { }
+
+    public ITable<Contact> Contacts => GetTable<Contact>();
+
+    public ITable<Product> Products => GetTable<Product>();
+}
+```
+
+If you want to write custom sessions, you can derive from `AsyncReadOnlySession<MyContext>`, `AsyncSession<MyContext>` or `AsyncTransactionalSession<MyContext>`. This will allow you to use an instance of your subclass when querying the database.
+
+*Please note*: we do not recommend that you use this pattern. Simply programming against `DataConnection` and calling `GetTable` within your custom sessions is easier.
+
+## Customizing the Session Factory
+
+When you register a session factory using `services.AddSessionFactoryFor`, you have the following parameters at your disposal:
+
+- `sessionLifetime`: the lifetime that is used to register your session with the DI container. The default is transient. You can also choose scoped if you want the DI container to dispose of the session and inject the same intance several times during a DI container scope. `SessionFactory<T>` supports these scenarios.
+- `factoryLifetime`: the life time of the `SessionFactory<T>`. The default value is singleton. You could choose another lifetime if you want the GC to grab a session factory when it is not in use.
+- `registerCreateSessionDelegate`: the value indicating if a `Func<TSessionAbstraction>` should also be registered with the DI container. This delegate is necessary for the session factory to resolve the session from the DI container. If you use a sophisticated DI container like [LightInject](https://www.lightinject.net/) that offers [Function Factories](https://www.lightinject.net/#function-factories), you can (and should) set this parameter to false.
 
 # General recommendations
 
