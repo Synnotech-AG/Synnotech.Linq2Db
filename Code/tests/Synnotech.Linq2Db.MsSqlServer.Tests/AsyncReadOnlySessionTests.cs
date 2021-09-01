@@ -28,7 +28,7 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
             CheckLoadedEmployees(employees);
         }
 
-        [Fact]
+        [SkippableFact]
         public async Task LoadDataWithSessionFactory()
         {
             SkipTestIfNecessary();
