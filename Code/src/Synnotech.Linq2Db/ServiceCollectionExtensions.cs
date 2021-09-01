@@ -38,21 +38,21 @@ namespace Synnotech.Linq2Db
         /// <typeparam name="TAbstraction">The interface that your session implements. It must implement <see cref="IAsyncSession" />.</typeparam>
         /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O. It must derive from <see cref="AsyncSession{TDataConnection}" />.</typeparam>
         /// <param name="services">The collection that holds all registrations for the DI container.</param>
-        /// <param name="registerCreateSessionDelegate">
-        /// The value indicating whether a Func&lt;TAbstraction> is also registered with the DI container (optional).
-        /// This factory delegate is necessary for the <see cref="SessionFactory{T}" /> to work properly. The default value is true.
-        /// You can set this value to false if you use a proper DI container like LightInject that offers function factories. https://www.lightinject.net/#function-factories
-        /// </param>
         /// <param name="sessionLifetime">
         /// The lifetime of the session (optional). Should be either <see cref="ServiceLifetime.Transient" /> or
         /// <see cref="ServiceLifetime.Scoped" />. The default is <see cref="ServiceLifetime.Transient" />.
         /// </param>
         /// <param name="factoryLifetime">The lifetime for the session factory. It's usually ok for them to be a singleton.</param>
+        /// <param name="registerCreateSessionDelegate">
+        /// The value indicating whether a Func&lt;TAbstraction> is also registered with the DI container (optional).
+        /// This factory delegate is necessary for the <see cref="SessionFactory{T}" /> to work properly. The default value is true.
+        /// You can set this value to false if you use a proper DI container like LightInject that offers function factories. https://www.lightinject.net/#function-factories
+        /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services" /> is null.</exception>
         public static IServiceCollection AddSessionFactoryFor<TAbstraction, TImplementation>(this IServiceCollection services,
-                                                                                             bool registerCreateSessionDelegate = true,
                                                                                              ServiceLifetime sessionLifetime = ServiceLifetime.Transient,
-                                                                                             ServiceLifetime factoryLifetime = ServiceLifetime.Singleton)
+                                                                                             ServiceLifetime factoryLifetime = ServiceLifetime.Singleton,
+                                                                                             bool registerCreateSessionDelegate = true)
             where TAbstraction : class, IAsyncReadOnlySession
             where TImplementation : class, TAbstraction
         {
