@@ -6,7 +6,7 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-5.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
+[![NuGet](https://img.shields.io/badge/NuGet-6.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
 
 # How to install
 
@@ -295,6 +295,35 @@ When you register a session factory using `services.AddSessionFactoryFor`, you h
 - `sessionLifetime`: the lifetime that is used to register your session with the DI container. The default is transient. You can also choose scoped if you want the DI container to dispose of the session and inject the same intance several times during a DI container scope. `SessionFactory<T>` supports these scenarios.
 - `factoryLifetime`: the life time of the `SessionFactory<T>`. The default value is singleton. You could choose another lifetime if you want the GC to grab a session factory when it is not in use.
 - `registerCreateSessionDelegate`: the value indicating if a `Func<TSessionAbstraction>` should also be registered with the DI container. This delegate is necessary for the session factory to resolve the session from the DI container. If you use a sophisticated DI container like [LightInject](https://www.lightinject.net/) that offers [Function Factories](https://www.lightinject.net/#function-factories), you can (and should) set this parameter to false.
+
+## Using a transaction in AsyncReadOnlySession
+
+By default, `AsyncReadOnlySession<T>` will not create a transaction explicitly. However, in some scenarios, you might want to create a transaction nonetheless even if you only read data. You can do this by deriving from `AsyncReadOnlySession<T>` (or `AsyncReadOnlySession`) and supply an isolation value as the second parameter to the base constructor call:
+
+```csharp
+public class MySession : AsyncReadOnlySession, IMySession
+{
+    public MySession(DataConnection dataConnection) : base(dataConnection, IsolationLevel.ReadUncommitted) { }
+
+    // Other members omitted for brevity's sake
+}
+```
+
+In the code sample above, the `AsyncReadOnlySession` will create a transaction when instatiated via `ISessionFactory<IMySession>`:
+
+```csharp
+// In your composition root:
+services.AddSessionFactoryFor<IMySession, MySession>();
+
+// When instantiating your session:
+await using var session = await SessionFactory.OpenSessionAsync(); // this call will start the transaction asynchronously
+```
+
+The transaction will always be rolled back when your session goes out of scope.
+
+A scenario where you might want to do this is the following: consider that you are having a long running transaction in MS SQL Server that also updates or inserts data. All other read-only calls to the database will be blocked as long as they touch one or more records that were also created / manipulated in the long running transaction. This will block every call, unless these read-only database calls are wrapped in read-uncommited transactions themselves. However, in MS SQL Server, this is not the default behavior: if you do not specify a dedicated transaction, each statement / command will be wrapped in a read-committed transaction.
+
+In general, we recommend to avoid this setting. Only use it if you have a special use case for it.
 
 # General recommendations
 

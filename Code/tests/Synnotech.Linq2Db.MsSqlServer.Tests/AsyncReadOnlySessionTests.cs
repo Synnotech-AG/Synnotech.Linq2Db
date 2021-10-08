@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LinqToDB;
@@ -42,6 +43,20 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
             CheckLoadedEmployees(employees);
         }
 
+        [SkippableFact]
+        public async Task LoadDataWithExplicitTransaction()
+        {
+            SkipTestIfNecessary();
+
+            var sessionFactory = PrepareContainer().AddSessionFactoryFor<IEmployeeSession, SessionWithTransactions>()
+                                                   .BuildServiceProvider()
+                                                   .GetRequiredService<ISessionFactory<IEmployeeSession>>();
+            await using var session = await sessionFactory.OpenSessionAsync();
+            var employees = await session.GetEmployeesAsync();
+
+            CheckLoadedEmployees(employees);
+        }
+
         private static void CheckLoadedEmployees(List<Employee>? employees)
         {
             var expectedEmployees = new[]
@@ -61,6 +76,13 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests
         private sealed class EmployeeSession : AsyncReadOnlySession, IEmployeeSession
         {
             public EmployeeSession(DataConnection dataConnection) : base(dataConnection) { }
+
+            public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
+        }
+
+        private sealed class SessionWithTransactions : AsyncReadOnlySession, IEmployeeSession
+        {
+            public SessionWithTransactions(DataConnection dataConnection) : base(dataConnection, IsolationLevel.ReadUncommitted) { }
 
             public Task<List<Employee>> GetEmployeesAsync() => DataConnection.GetTable<Employee>().ToListAsync();
         }

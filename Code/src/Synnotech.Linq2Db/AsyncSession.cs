@@ -32,33 +32,21 @@ namespace Synnotech.Linq2Db
         /// Initializes a new instance of <see cref="AsyncSession{TDataConnection}" />.
         /// </summary>
         /// <param name="dataConnection">The Linq2Db data connection used for database access.</param>
-        /// <param name="transactionLevel">The isolation level for the transaction.</param>
+        /// <param name="transactionLevel">
+        /// The isolation level for the transaction (optional). The default value is <see cref="IsolationLevel.Serializable" />.
+        /// When this value is set to <see cref="IsolationLevel.Unspecified" />, no transaction will be started.
+        /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnection" /> is null.</exception>
         protected AsyncSession(TDataConnection dataConnection, IsolationLevel transactionLevel = IsolationLevel.Serializable)
-            : base(dataConnection) =>
-            TransactionLevel = transactionLevel;
+            : base(dataConnection, transactionLevel) { }
 
         /// <summary>
-        /// Gets the isolation level of the transaction.
+        /// Commits the internal transaction if possible.
         /// </summary>
-        protected IsolationLevel TransactionLevel { get; }
-
-        /// <summary>
-        /// Commits the internal transaction.
-        /// </summary>
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default) => DataConnection.CommitTransactionAsync(cancellationToken);
-
-        /// <summary>
-        /// Checks if a transaction is present on the underlying data connection.
-        /// </summary>
-        bool IInitializeAsync.IsInitialized => DataConnection.Transaction != null;
-
-        /// <summary>
-        /// Begins a transaction on the internal data connection asynchronously. This is an explicit interface implementation because clients should not
-        /// have to call this method. Instead, the session should be instantiated via <see cref="SessionFactory{T}" /> which
-        /// in turn calls InitializeAsync.
-        /// </summary>
-        Task IInitializeAsync.InitializeAsync() => DataConnection.BeginTransactionAsync(TransactionLevel);
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
+            TransactionLevel != IsolationLevel.Unspecified ?
+                DataConnection.CommitTransactionAsync(cancellationToken) :
+                Task.CompletedTask;
     }
 
     /// <summary>

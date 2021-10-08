@@ -18,5 +18,9 @@ namespace Synnotech.Linq2Db.Tests
         [Fact]
         public static void MustImplementIAsyncReadOnlySession() =>
             typeof(AsyncReadOnlySession<>).Should().Implement<IAsyncReadOnlySession>();
+
+        [Fact]
+        public static void MustImplementIInitializeAsync() =>
+            typeof(AsyncReadOnlySession<>).Should().Implement<IInitializeAsync>();
     }
 }
