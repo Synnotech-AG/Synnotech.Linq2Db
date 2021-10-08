@@ -2,17 +2,17 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
-Synntech.Linq2Db 5.0.0
+Synntech.Linq2Db 6.0.0
 --------------------------------
 
-- added support for linq2db 3.4.3 and (breaking change) Synnotech.DatabaseAbstractions 3.0.0
-- read-only sessions and transactional sessions can now be created via ISessionFactory&lt;T&gt;
+- added support for linq2db 3.4.5
+- the AsyncReadOnlySession can now have a transaction (breaking change)
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
         </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="linq2db" Version="3.4.3" />
+        <PackageReference Include="linq2db" Version="3.4.5" />
         <PackageReference Include="Light.GuardClauses" Version="9.0.0" />
         <PackageReference Include="Synnotech.DatabaseAbstractions" Version="3.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
