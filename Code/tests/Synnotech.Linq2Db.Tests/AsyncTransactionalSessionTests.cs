@@ -9,5 +9,9 @@ namespace Synnotech.Linq2Db.Tests
         [Fact]
         public static void MustImplementITransactionalSession() =>
             typeof(AsyncTransactionalSession<>).Should().Implement<IAsyncTransactionalSession>();
+
+        [Fact]
+        public static void MustDeriveFromAsyncReadOnlySession() =>
+            typeof(AsyncTransactionalSession<>).Should().BeDerivedFrom(typeof(AsyncReadOnlySession<>));
     }
 }
