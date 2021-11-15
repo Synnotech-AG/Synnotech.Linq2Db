@@ -3,7 +3,7 @@
 *Extensions for Linq2Db that target Microsoft SQL Server*
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-4.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
+[![NuGet](https://img.shields.io/badge/NuGet-6.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
 
 # How to install
 
@@ -11,7 +11,7 @@ Synnotech.Linq2Db.MsSqlServer is compiled against [.NET Standard 2.0 and 2.1](ht
 
 Synnotech.Linq2Db.MsSqlServer is available as a [NuGet package](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/) and can be installed via:
 
-- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="4.0.0" />`
+- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="6.0.0" />`
 - **dotnet CLI**: `dotnet add package Synnotech.Linq2Db.MsSqlServer`
 - **Visual Studio Package Manager Console**: `Install-Package Synnotech.Linq2Db.MsSqlServer`
 
