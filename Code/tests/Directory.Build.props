@@ -1,8 +1,9 @@
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <Import Project="Local.props" Condition="Exists('./Local.props')"/>
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net48</TargetFrameworks>
+        <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net6.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 

@@ -10,3 +10,4 @@ Deployment/
 *.user
 *nupkg
 *.snk
+Local.props
