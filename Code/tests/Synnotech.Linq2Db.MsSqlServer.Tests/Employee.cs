@@ -1,11 +1,10 @@
-﻿namespace Synnotech.Linq2Db.MsSqlServer.Tests
+﻿namespace Synnotech.Linq2Db.MsSqlServer.Tests;
+
+public sealed class Employee
 {
-    public sealed class Employee
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-        public int Age { get; set; }
-    }
+    public int Age { get; set; }
 }

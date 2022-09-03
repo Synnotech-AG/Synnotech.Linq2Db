@@ -2,16 +2,15 @@
 using Synnotech.DatabaseAbstractions;
 using Xunit;
 
-namespace Synnotech.Linq2Db.Tests
-{
-    public static class AsyncTransactionalSessionTests
-    {
-        [Fact]
-        public static void MustImplementITransactionalSession() =>
-            typeof(AsyncTransactionalSession<>).Should().Implement<IAsyncTransactionalSession>();
+namespace Synnotech.Linq2Db.Tests;
 
-        [Fact]
-        public static void MustDeriveFromAsyncReadOnlySession() =>
-            typeof(AsyncTransactionalSession<>).Should().BeDerivedFrom(typeof(AsyncReadOnlySession<>));
-    }
+public static class AsyncTransactionalSessionTests
+{
+    [Fact]
+    public static void MustImplementITransactionalSession() =>
+        typeof(AsyncTransactionalSession<>).Should().Implement<IAsyncTransactionalSession>();
+
+    [Fact]
+    public static void MustDeriveFromAsyncReadOnlySession() =>
+        typeof(AsyncTransactionalSession<>).Should().BeDerivedFrom(typeof(AsyncReadOnlySession<>));
 }
