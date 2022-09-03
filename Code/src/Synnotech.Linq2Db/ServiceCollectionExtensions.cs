@@ -4,6 +4,7 @@ using Light.GuardClauses;
 using LinqToDB.Configuration;
 using LinqToDB.Data;
 using LinqToDB.DataProvider;
+using LinqToDB.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Synnotech.DatabaseAbstractions;
@@ -101,6 +102,7 @@ public static class ServiceCollectionExtensions
     /// are optional but need to be set together if a level other than <see cref="TraceLevel.Off" /> is used.
     /// </summary>
     /// <param name="dataProvider">The Linq2Db data provider used to create database-specific queries.</param>
+    /// <param name="mappingSchema"></param>
     /// <param name="connectionString">The connection string for the target database.</param>
     /// <param name="traceLevel">The level that is used to log data connection messages (optional). Defaults to <see cref="TraceLevel.Off" />.</param>
     /// <param name="logger">The logger for <see cref="DataConnection" /> when <paramref name="traceLevel" /> is set to a value other than <see cref="TraceLevel.Off" />.</param>
@@ -110,6 +112,7 @@ public static class ServiceCollectionExtensions
     /// or when <paramref name="connectionString" /> is an empty string or contains only white space.
     /// </exception>
     public static LinqToDBConnectionOptions CreateLinq2DbConnectionOptions(IDataProvider dataProvider,
+                                                                           MappingSchema? mappingSchema,
                                                                            string connectionString,
                                                                            TraceLevel traceLevel = TraceLevel.Off,
                                                                            ILogger<DataConnection>? logger = null)
@@ -119,6 +122,8 @@ public static class ServiceCollectionExtensions
 
         var optionsBuilder = new LinqToDBConnectionOptionsBuilder().UseConnectionString(dataProvider, connectionString)
                                                                    .WithTraceLevel(traceLevel);
+        if (mappingSchema is not null)
+            optionsBuilder.UseMappingSchema(mappingSchema);
 
         if (traceLevel == TraceLevel.Off)
             return optionsBuilder.Build();

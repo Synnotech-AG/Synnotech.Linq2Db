@@ -55,11 +55,16 @@ public abstract class AsyncReadOnlySession<TDataConnection> : IAsyncReadOnlySess
     /// <summary>
     /// Disposes the Linq2Db data connection.
     /// </summary>
-    public ValueTask DisposeAsync() =>
+    public ValueTask DisposeAsync()
 #if NET462
-            new (DataConnection.DisposeAsync());
+    {
+        DataConnection.Dispose();
+        return default;
+    }
 #else
-        DataConnection.DisposeAsync();
+    {
+        return DataConnection.DisposeAsync();
+    }
 #endif
 
     bool IInitializeAsync.IsInitialized =>

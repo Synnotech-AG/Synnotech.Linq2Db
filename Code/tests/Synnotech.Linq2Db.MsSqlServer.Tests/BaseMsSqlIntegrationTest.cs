@@ -45,7 +45,7 @@ public abstract class BaseMsSqlIntegrationTest : IAsyncLifetime
     protected static void SkipTestIfNecessary() => Skip.IfNot(AreDatabaseTestsEnabled);
 
     protected IServiceCollection PrepareContainer() =>
-        new ServiceCollection().AddLinq2DbForSqlServer(DatabaseMappings.CreateMappings)
+        new ServiceCollection().AddLinq2DbForSqlServer(DatabaseMappings.CreateMappings())
                                .AddSingleton(TestSettings.Configuration)
                                .AddLogging(builder => builder.AddSerilog(Logger));
 }

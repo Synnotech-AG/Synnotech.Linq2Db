@@ -25,15 +25,13 @@ public static class ServiceCollectionExtensions
     /// delegate is applied to the mapping schema of the data provider.
     /// </summary>
     /// <param name="services">The collection that is used to register all necessary types with the DI container.</param>
-    /// <param name="createMappings">
-    /// The delegate that manipulates the mapping schema of the data provider (optional). Alternatively, you could use the Linq2Db attributes to configure
-    /// your model classes, but we strongly recommend that you use the Linq2Db <see cref="FluentMappingBuilder" /> to specify how model classes are mapped.
+    /// <param name="mappingSchema">
+    /// The mapping schema that describes how entities are mapped to the database.
     /// </param>
     /// <param name="configurationSectionName">The name of the configuration section that is used to retrieve the <see cref="Linq2DbSettings"/>.</param>
     /// <param name="sqlServerProvider">
     /// The underlying provider that is used (optional). You can choose between System.Data.SqlClient (the legacy provider, also part of the .NET Base Class Library)
-    /// or Microsoft.Data.SqlClient (the newest version which will also receive new updates). We recommend that you use the latter unless you have known issues
-    /// about it.
+    /// or Microsoft.Data.SqlClient (the newest version which will also receive new updates).
     /// </param>
     /// <param name="dataConnectionLifetime">
     /// The lifetime that is used for the data connection (optional). The default value is <see cref="ServiceLifetime.Transient" />. If you want to, you
@@ -45,8 +43,8 @@ public static class ServiceCollectionExtensions
     /// </param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services" /> is null.</exception>
     public static IServiceCollection AddLinq2DbForSqlServer(this IServiceCollection services,
-                                                            Action<MappingSchema>? createMappings = null,
-                                                            SqlServerProvider sqlServerProvider = SqlServerProvider.MicrosoftDataSqlClient,
+                                                            MappingSchema? mappingSchema = null,
+                                                            SqlServerProvider sqlServerProvider = SqlServerProvider.SystemDataSqlClient,
                                                             string configurationSectionName = Linq2DbSettings.DefaultSectionName,
                                                             ServiceLifetime dataConnectionLifetime = ServiceLifetime.Transient,
                                                             bool registerFactoryDelegateForDataConnection = true)
@@ -54,11 +52,12 @@ public static class ServiceCollectionExtensions
         services.MustNotBeNull(nameof(services));
 
         services.AddSingleton(container => Linq2DbSettings.FromConfiguration(container.GetRequiredService<IConfiguration>(), configurationSectionName))
-                .AddSingleton(container => CreateSqlServerDataProvider(container.GetRequiredService<Linq2DbSettings>().SqlServerVersion, sqlServerProvider, createMappings))
+                .AddSingleton(container => CreateSqlServerDataProvider(container.GetRequiredService<Linq2DbSettings>().SqlServerVersion, sqlServerProvider))
                 .AddSingleton(container =>
                  {
                      var settings = container.GetRequiredService<Linq2DbSettings>();
                      return CreateLinq2DbConnectionOptions(container.GetRequiredService<IDataProvider>(),
+                                                           mappingSchema,
                                                            settings.ConnectionString,
                                                            settings.TraceLevel,
                                                            container.GetService<ILogger<DataConnection>>());
@@ -78,16 +77,10 @@ public static class ServiceCollectionExtensions
     /// or Microsoft.Data.SqlClient (the newest version which will also receive new updates). We recommend that you use the latter unless you have known issues
     /// about it.
     /// </param>
-    /// <param name="createMappings">
-    /// The delegate that manipulates the mapping schema of the data provider (optional). Alternatively, you could use the Linq2Db attributes to configure
-    /// your model classes, but we strongly recommend that you use the Linq2Db <see cref="FluentMappingBuilder" /> to specify how model classes are mapped.
-    /// </param>
     public static IDataProvider CreateSqlServerDataProvider(SqlServerVersion sqlServerVersion = SqlServerVersion.v2017,
-                                                            SqlServerProvider sqlServerProvider = SqlServerProvider.MicrosoftDataSqlClient,
-                                                            Action<MappingSchema>? createMappings = null)
+                                                            SqlServerProvider sqlServerProvider = SqlServerProvider.SystemDataSqlClient)
     {
         var dataProvider = SqlServerTools.GetDataProvider(sqlServerVersion, sqlServerProvider);
-        createMappings?.Invoke(dataProvider.MappingSchema);
         return dataProvider;
     }
 }

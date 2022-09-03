@@ -4,8 +4,9 @@ namespace Synnotech.Linq2Db.MsSqlServer.Tests;
 
 public static class DatabaseMappings
 {
-    public static void CreateMappings(MappingSchema mappingSchema)
+    public static MappingSchema CreateMappings()
     {
+        var mappingSchema = new MappingSchema();
         var builder = mappingSchema.GetFluentMappingBuilder();
 
         builder.Entity<Employee>()
@@ -13,5 +14,7 @@ public static class DatabaseMappings
                .Property(e => e.Id).IsIdentity().IsPrimaryKey()
                .Property(e => e.Name).HasLength(50).IsNullable(false)
                .Property(e => e.Age).IsNullable(false);
+
+        return mappingSchema;
     }
 }

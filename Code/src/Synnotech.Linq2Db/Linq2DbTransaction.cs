@@ -28,11 +28,16 @@ public sealed class Linq2DbTransaction : IAsyncTransaction
     /// Disposes the underlying transaction. It will also be rolled back if
     /// <see cref="CommitAsync" /> was not called up to this point.
     /// </summary>
-    public ValueTask DisposeAsync() =>
+    public ValueTask DisposeAsync()
 #if NET462
-        new (DataConnectionTransaction.DisposeAsync());
+    {
+        DataConnectionTransaction.Dispose();
+        return default;
+    }
 #else
-            DataConnectionTransaction.DisposeAsync();
+    {
+        return DataConnectionTransaction.DisposeAsync();
+    }
 #endif
 
     /// <summary>
