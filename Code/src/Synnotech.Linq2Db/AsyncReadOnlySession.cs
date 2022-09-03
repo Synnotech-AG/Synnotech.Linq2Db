@@ -55,7 +55,12 @@ namespace Synnotech.Linq2Db
         /// <summary>
         /// Disposes the Linq2Db data connection.
         /// </summary>
-        public ValueTask DisposeAsync() => DataConnection.DisposeAsync();
+        public ValueTask DisposeAsync() =>
+#if NET462
+            new (DataConnection.DisposeAsync());
+#else
+            DataConnection.DisposeAsync();
+#endif
 
         bool IInitializeAsync.IsInitialized =>
             TransactionLevel == IsolationLevel.Unspecified || DataConnection.Transaction != null;

@@ -10,7 +10,7 @@ namespace Synnotech.Linq2Db
     /// <summary>
     /// Represents an adapter for the Linq2Db <see cref="DataConnectionTransaction" /> that
     /// implements <see cref="IAsyncTransaction" />. The transaction will be
-    /// implicitly rolled back when commit was not called and the transaction is disposed. 
+    /// implicitly rolled back when commit was not called and the transaction is disposed.
     /// </summary>
     public sealed class Linq2DbTransaction : IAsyncTransaction
     {
@@ -18,7 +18,7 @@ namespace Synnotech.Linq2Db
         /// Initializes a new instance of <see cref="Linq2DbTransaction" />.
         /// </summary>
         /// <param name="dataConnectionTransaction">The data connection transaction that will be wrapped by this instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnectionTransaction"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="dataConnectionTransaction" /> is null.</exception>
         public Linq2DbTransaction(DataConnectionTransaction dataConnectionTransaction) =>
             DataConnectionTransaction = dataConnectionTransaction.MustNotBeNull(nameof(dataConnectionTransaction));
 
@@ -26,13 +26,18 @@ namespace Synnotech.Linq2Db
 
         /// <summary>
         /// Disposes the underlying transaction. It will also be rolled back if
-        /// <see cref="CommitAsync"/> was not called up to this point.
+        /// <see cref="CommitAsync" /> was not called up to this point.
         /// </summary>
-        public ValueTask DisposeAsync() => DataConnectionTransaction.DisposeAsync();
+        public ValueTask DisposeAsync() =>
+#if NET462
+            new (DataConnectionTransaction.DisposeAsync());
+#else
+            DataConnectionTransaction.DisposeAsync();
+#endif
 
         /// <summary>
         /// Disposes the underlying transaction. It will also be rolled back if
-        /// <see cref="CommitAsync"/> was not called up to this point.
+        /// <see cref="CommitAsync" /> was not called up to this point.
         /// </summary>
         public void Dispose() => DataConnectionTransaction.Dispose();
 
