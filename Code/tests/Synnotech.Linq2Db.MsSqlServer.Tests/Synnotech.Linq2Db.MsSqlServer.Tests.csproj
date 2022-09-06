@@ -2,7 +2,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Synnotech.Linq2Db.MsSqlServer\Synnotech.Linq2Db.MsSqlServer.csproj" />
-        <PackageReference Include="Synnotech.Xunit" Version="1.2.0" />
+        <PackageReference Include="Synnotech.Xunit" Version="1.2.1" />
         <PackageReference Include="Synnotech.MsSqlServer" Version="3.1.0" />
         <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
@@ -14,12 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="testsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="testsettings.Development.json" Condition="Exists('testsettings.Development.json')">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <EmbeddedResource Include="Database.sql" />
     </ItemGroup>
 
