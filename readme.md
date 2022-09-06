@@ -6,11 +6,11 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-6.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
+[![NuGet](https://img.shields.io/badge/NuGet-7.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages?q=Synnotech.Linq2Db/)
 
 # How to install
 
-The Synnotech.Linq2Db packages are compiled against [.NET Standard 2.0 and 2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) and thus supports all major plattforms like .NET 5, .NET Core, .NET Framework 4.6.1 or newer, Mono, Xamarin, UWP, or Unity.
+The Synnotech.Linq2Db packages are compiled against [.NET Standard 2.0 and 2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)and .NET Framework 4.6.2, thus supporting all major plattforms like .NET 6, .NET Core, .NET Framework 4.6.2 or newer, Mono, Xamarin, UWP, or Unity.
 
 There are several packages available:
 

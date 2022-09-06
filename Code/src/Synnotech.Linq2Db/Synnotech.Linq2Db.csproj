@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
-Synntech.Linq2Db 6.0.0
+Synntech.Linq2Db 7.0.0
 --------------------------------
 
-- added support for linq2db 3.4.5
-- the AsyncReadOnlySession can now have a transaction (breaking change)
+- added support for linq2db 4.2
+- there is now a dedicated framework target for .NET 4.6.2, to avoid MissingMethodExceptions for DataConnection.DisposeAsync
+- the IInitializeAsync infrastructure from Synnotech.Core is now used instead of the old custom one
 - see all docs at https://github.com/Synnotech-AG/Synnotech.Linq2Db
         </PackageReleaseNotes>
     </PropertyGroup>

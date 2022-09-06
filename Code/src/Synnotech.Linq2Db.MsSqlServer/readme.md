@@ -3,15 +3,15 @@
 *Extensions for Linq2Db that target Microsoft SQL Server*
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/Synnotech-AG/Synnotech.Linq2Db/blob/main/LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-6.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
+[![NuGet](https://img.shields.io/badge/NuGet-7.0.0-blue.svg?style=for-the-badge)](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/)
 
 # How to install
 
-Synnotech.Linq2Db.MsSqlServer is compiled against [.NET Standard 2.0 and 2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) and thus supports all major plattforms like .NET 5, .NET Core, .NET Framework 4.6.1 or newer, Mono, Xamarin, UWP, or Unity.
+Synnotech.Linq2Db.MsSqlServer is compiled against [.NET Standard 2.0 and 2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) and .NET Framework 4.6.2, thus supporting all major plattforms like .NET 6, .NET Core, .NET Framework 4.6.2 or newer, Mono, Xamarin, UWP, or Unity.
 
 Synnotech.Linq2Db.MsSqlServer is available as a [NuGet package](https://www.nuget.org/packages/Synnotech.Linq2Db.MsSqlServer/) and can be installed via:
 
-- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="6.0.0" />`
+- **Package Reference in csproj**: `<PackageReference Include="Synnotech.Linq2Db.MsSqlServer" Version="7.0.0" />`
 - **dotnet CLI**: `dotnet add package Synnotech.Linq2Db.MsSqlServer`
 - **Visual Studio Package Manager Console**: `Install-Package Synnotech.Linq2Db.MsSqlServer`
 
@@ -60,10 +60,10 @@ Please note: the configuration is only loaded once during startup. If you change
 
 `AddLinq2DbForSqlServer` has several optional parameters that you can supply:
 
-- `createMappings`: a delegate that can be used to configure the Linq2DB mapping schema. You do not need to provide this delegate when you use attributes on your data access model classes. However, we highly encourage you to not use attributes but use a single method were you define the mapping configuration (this makes it easier to customize or replace the data access layer).
+- `mappingSchema`: an instance of Linq2DB mapping schema. You do not need to provide this instance when you use attributes on your data access model classes. However, we highly encourage you to not use attributes but use a single method were you define the mapping configuration (this makes it easier to customize or replace the data access layer).
 - `sqlServerProvider`: the enum value that indicates whether you want to use `Microsoft.Data.SqlClient` or `System.Data.SqlClient` as the underlying data provider. We recommend to use the former one (unless you have issues with it, e.g. when you want to use [spatial types or SqlHierarchyId]()) as it will receive updates more frequently. `System.Data.SqlClient` is part of the .NET Base Class Library.
 - `configurationSectionName`: the section name that is used to retrieve the `Linq2DbSettings` from the `IConfiguration` instance already registered with the DI container. The default value is "database".
 - `dataConnectionLifetime`: the enumeration value indicating the service lifetime for `DataConnection`. The default value is `ServiceLifetime.Transient`.
-- `registerFactoryDelegateForDataConnection`: the value indicating whether a `Func<DataConnection>` should be registered with the DI Container. The default value is `true`. You can set this value to false if you use a proper DI container like [LigthInject](https://github.com/seesharper/LightInject) that supports [Function Factories](https://www.lightinject.net/#function-factories).
+- `registerFactoryDelegateForDataConnection`: the value indicating whether a `Func<DataConnection>` should be registered with the DI Container. The default value is `true`. You can set this value to false if you use a proper DI container like [LigthInject](https://github.com/seesharper/LightInject) that supports [Function Factories](https://www.lightinject.net/#function-factories), or null when you want to configure this via `ContainerSettingsContext.Settings`.
 
 If you don't want to use `AddLinq2DbForSqlServer`, you might still want to reuse its internal functionality. Just take a look at the source code of `Linq2DbSettings`, `CreateSqlServerDataProvider`, `CreateLinq2DbConnectionOptions`, and `LogLinq2DbMessage`.
