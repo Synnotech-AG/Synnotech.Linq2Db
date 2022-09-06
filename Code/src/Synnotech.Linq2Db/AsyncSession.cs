@@ -3,6 +3,7 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using LinqToDB.Data;
+using Synnotech.Core.Initialization;
 using Synnotech.DatabaseAbstractions;
 
 namespace Synnotech.Linq2Db;
@@ -25,7 +26,7 @@ namespace Synnotech.Linq2Db;
 /// </para>
 /// </summary>
 /// <typeparam name="TDataConnection">Your database context type that derives from <see cref="DataConnection" />.</typeparam>
-public abstract class AsyncSession<TDataConnection> : AsyncReadOnlySession<TDataConnection>, IAsyncSession, IInitializeAsync
+public abstract class AsyncSession<TDataConnection> : AsyncReadOnlySession<TDataConnection>, IAsyncSession
     where TDataConnection : DataConnection
 {
     /// <summary>

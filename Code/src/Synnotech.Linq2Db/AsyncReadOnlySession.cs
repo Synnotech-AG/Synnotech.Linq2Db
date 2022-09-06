@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using Light.GuardClauses;
 using LinqToDB.Data;
+using Synnotech.Core.Initialization;
 using Synnotech.DatabaseAbstractions;
 
 namespace Synnotech.Linq2Db;
@@ -70,9 +72,9 @@ public abstract class AsyncReadOnlySession<TDataConnection> : IAsyncReadOnlySess
     bool IInitializeAsync.IsInitialized =>
         TransactionLevel == IsolationLevel.Unspecified || DataConnection.Transaction != null;
 
-    Task IInitializeAsync.InitializeAsync() =>
+    Task IInitializeAsync.InitializeAsync(CancellationToken cancellationToken) =>
         TransactionLevel != IsolationLevel.Unspecified ?
-            DataConnection.BeginTransactionAsync(TransactionLevel) :
+            DataConnection.BeginTransactionAsync(TransactionLevel, cancellationToken) :
             Task.CompletedTask;
 }
 

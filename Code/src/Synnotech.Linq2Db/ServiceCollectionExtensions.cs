@@ -7,6 +7,8 @@ using LinqToDB.DataProvider;
 using LinqToDB.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Synnotech.Core.DependencyInjection;
+using Synnotech.Core.Initialization;
 using Synnotech.DatabaseAbstractions;
 
 namespace Synnotech.Linq2Db;
@@ -36,8 +38,8 @@ public static class ServiceCollectionExtensions
     /// }
     /// </code>
     /// </summary>
-    /// <typeparam name="TAbstraction">The interface that your session implements. It must implement <see cref="IAsyncSession" />.</typeparam>
-    /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O. It must derive from <see cref="AsyncSession{TDataConnection}" />.</typeparam>
+    /// <typeparam name="TAbstraction">The interface that your session implements. It must implement <see cref="IAsyncReadOnlySession" />.</typeparam>
+    /// <typeparam name="TImplementation">The Linq2Db session implementation that performs the actual database I/O. It must derive <typeparamref name="TAbstraction" />.</typeparam>
     /// <param name="services">The collection that holds all registrations for the DI container.</param>
     /// <param name="sessionLifetime">
     /// The lifetime of the session (optional). Should be either <see cref="ServiceLifetime.Transient" /> or
@@ -53,7 +55,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSessionFactoryFor<TAbstraction, TImplementation>(this IServiceCollection services,
                                                                                          ServiceLifetime sessionLifetime = ServiceLifetime.Transient,
                                                                                          ServiceLifetime factoryLifetime = ServiceLifetime.Singleton,
-                                                                                         bool registerCreateSessionDelegate = true)
+                                                                                         bool? registerCreateSessionDelegate = null)
         where TAbstraction : class, IAsyncReadOnlySession
         where TImplementation : class, TAbstraction
     {
@@ -61,7 +63,7 @@ public static class ServiceCollectionExtensions
 
         services.Add(new ServiceDescriptor(typeof(TAbstraction), typeof(TImplementation), sessionLifetime));
         services.Add(new ServiceDescriptor(typeof(ISessionFactory<TAbstraction>), typeof(SessionFactory<TAbstraction>), factoryLifetime));
-        if (registerCreateSessionDelegate)
+        if (ContainerSettingsContext.Settings.CheckIfFactoryDelegateShouldBeRegistered(registerCreateSessionDelegate))
             services.AddSingleton<Func<TAbstraction>>(c => c.GetRequiredService<TAbstraction>);
         return services;
     }

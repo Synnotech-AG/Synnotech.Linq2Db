@@ -8,6 +8,7 @@ using LinqToDB.Mapping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Synnotech.Core.DependencyInjection;
 using static Synnotech.Linq2Db.ServiceCollectionExtensions;
 
 namespace Synnotech.Linq2Db.MsSqlServer;
@@ -21,8 +22,7 @@ public static class ServiceCollectionExtensions
     /// Registers several Linq2Db types with the DI container, especially a <see cref="DataConnection" /> (using a transient lifetime by default). The data connection
     /// is instantiated by passing a singleton instance of <see cref="LinqToDBConnectionOptions" /> which is created from <see cref="Linq2DbSettings" />.
     /// The latter is also available as a singleton and retrieved from the <see cref="IConfiguration" /> instance (which should already be registered with the DI container).
-    /// Then a <see cref="IDataProvider" /> using Microsoft.Data.SqlClient internally is created and registered as a singleton as well. The <paramref name="createMappings" />
-    /// delegate is applied to the mapping schema of the data provider.
+    /// Then a <see cref="IDataProvider" /> using Microsoft.Data.SqlClient internally is created and registered as a singleton as well.
     /// </summary>
     /// <param name="services">The collection that is used to register all necessary types with the DI container.</param>
     /// <param name="mappingSchema">
@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
                                                             SqlServerProvider sqlServerProvider = SqlServerProvider.SystemDataSqlClient,
                                                             string configurationSectionName = Linq2DbSettings.DefaultSectionName,
                                                             ServiceLifetime dataConnectionLifetime = ServiceLifetime.Transient,
-                                                            bool registerFactoryDelegateForDataConnection = true)
+                                                            bool? registerFactoryDelegateForDataConnection = null)
     {
         services.MustNotBeNull(nameof(services));
 
@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
                                                            container.GetService<ILogger<DataConnection>>());
                  })
                 .Add(new ServiceDescriptor(typeof(DataConnection), container => new DataConnection(container.GetRequiredService<LinqToDBConnectionOptions>()), dataConnectionLifetime));
-        if (registerFactoryDelegateForDataConnection)
+        if (ContainerSettingsContext.Settings.CheckIfFactoryDelegateShouldBeRegistered(registerFactoryDelegateForDataConnection))
             services.AddSingleton<Func<DataConnection>>(container => container.GetRequiredService<DataConnection>);
         return services;
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Synnotech.Core.Initialization;
 using Synnotech.DatabaseAbstractions;
 using Xunit;
 
